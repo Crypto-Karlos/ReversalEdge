@@ -1,9 +1,9 @@
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
 
 app = FastAPI()
 
+# Allow frontend to connect
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -20,11 +20,5 @@ def home():
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     while True:
-        try:
-            data = await websocket.receive_text()
-            await websocket.send_text(f"Echo: {data}")
-        except:
-            break
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+        data = await websocket.receive_text()
+        await websocket.send_text(data)  # Echo back
