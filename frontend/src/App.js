@@ -5,7 +5,8 @@ function App() {
   const [input, setInput] = useState("");
 
   useEffect(() => {
-    const ws = new WebSocket((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws');
+    const WS_URL = 'wss://reversaledge-backend.onrender.com/ws';
+    const ws = new WebSocket(WS_URL);
     ws.onopen = () => setMsg("Connected! Type and send a test.");
     ws.onmessage = (e) => setMsg("Server: " + e.data);
     ws.onerror = () => setMsg("Failed");
@@ -13,8 +14,8 @@ function App() {
   }, []);
 
   const send = () => {
-    const ws = new WebSocket((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws');
-    ws.onopen = () => ws.send(input);
+    const WS_URL = 'wss://reversaledge-backend.onrender.com/ws';
+    const ws = new WebSocket(WS_URL);
   };
 
   return (
