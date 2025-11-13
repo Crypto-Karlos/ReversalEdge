@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# Allow frontend to connect
+# Allow frontend from Vercel
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,6 +19,12 @@ def home():
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
+    print("WebSocket connected!")  # Debug
     while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(data)  # Echo back
+        try:
+            data = await websocket.receive_text()
+            print(f"Received: {data}")
+            await websocket.send_text(f"Echo: {data}")
+        except Exception as e:
+            print("WebSocket disconnected:", e)
+            break
