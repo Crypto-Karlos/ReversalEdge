@@ -13,10 +13,10 @@ function App() {
     return () => ws.close();
   }, []);
 
-  const send = () => {
-    const WS_URL = 'wss://reversaledge-backend.onrender.com/ws';
-    const ws = new WebSocket(WS_URL);
-  };
+ const send = () => {
+  setMsg(`Echo: ${input}`);
+  setInput('');
+};
 
   return (
     <div style={{padding:40, fontFamily:'Arial'}}>
