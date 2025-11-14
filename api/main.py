@@ -1,6 +1,9 @@
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
+import asyncio
+import json
+import random
+from datetime import datetime
 
 app = FastAPI()
 
@@ -12,19 +15,33 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/")
-def home():
-    return {"message": "ReversalEdge Backend is LIVE!"}
+# Mock data generator
+PAIRS = ["BTC/USDT", "ETH/USDT", "SOL/USDT", "ADA/USDT", "XRP/USDT"]
+
+async def generate_signals(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        while True:
+            pair = random.choice(PAIRS)
+            signal_type = random.choice(["buy", "sell"])
+            confidence = random.randint(70, 98)
+           
+            data = {
+                "pair": pair,
+                "type": signal_type,
+                "confidence": confidence,
+                "time": datetime.now().isoformat()
+            }
+           
+            await websocket.send_text(json.dumps(data))
+            await asyncio.sleep(random.uniform(1.5, 4.0))  # Real-time pace
+    except:
+        pass
 
 @app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    while True:
-        try:
-            data = await websocket.receive_text()
-            await websocket.send_text(f"Echo: {data}")
-        except:
-            break
+async def stream_signals(websocket: WebSocket):
+    await generate_signals(websocket)
 
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+@app.get("/")
+def home():
+    return {"status": "ReversalEdge Engine LIVE", "signals_per_minute": "~20"}
