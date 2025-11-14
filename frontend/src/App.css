@@ -1,0 +1,71 @@
+.App {
+  font-family: 'Segoe UI', sans-serif;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #1a1a1a;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 2.5rem;
+  color: #6c5ce7;
+}
+
+header p {
+  color: #636e72;
+  font-size: 1.1rem;
+}
+
+.signals {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.no-data {
+  text-align: center;
+  color: #b2bec3;
+  font-style: italic;
+  padding: 40px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+th {
+  background: #f1f2f6;
+  font-weight: 600;
+  color: #2d3436;
+}
+
+.signal {
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.buy .signal { color: #00b894; }
+.sell .signal { color: #d63031; }
+
+footer {
+  text-align: center;
+  margin-top: 40px;
+  color: #636e72;
+  font-size: 0.9rem;
+} 
