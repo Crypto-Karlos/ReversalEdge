@@ -1,71 +1,47 @@
-.App {
-  font-family: 'Segoe UI', sans-serif;
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 20px;
-  background: #f8f9fa;
-  min-height: 100vh;
+.controls {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+  flex-wrap: wrap;
 }
 
-header {
-  text-align: center;
-  margin-bottom: 30px;
-  color: #1a1a1a;
-}
-
-header h1 {
-  margin: 0;
-  font-size: 2.5rem;
-  color: #6c5ce7;
-}
-
-header p {
-  color: #636e72;
-  font-size: 1.1rem;
-}
-
-.signals {
+.controls select, .controls button {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
   background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-}
-
-.no-data {
-  text-align: center;
-  color: #b2bec3;
-  font-style: italic;
-  padding: 40px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th, td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #eee;
-}
-
-th {
-  background: #f1f2f6;
-  font-weight: 600;
-  color: #2d3436;
-}
-
-.signal {
-  font-weight: bold;
-  text-transform: uppercase;
-}
-
-.buy .signal { color: #00b894; }
-.sell .signal { color: #d63031; }
-
-footer {
-  text-align: center;
-  margin-top: 40px;
-  color: #636e72;
   font-size: 0.9rem;
-} 
+}
+
+.controls button.icon {
+  width: 40px;
+  padding: 0;
+}
+
+.dark {
+  background: #121212;
+  color: #e0e0e0;
+}
+
+.dark .signals {
+  background: #1e1e1e;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.dark th {
+  background: #2d2d2d;
+  color: #aaa;
+}
+
+.dark td {
+  border-color: #333;
+}
+
+.version {
+  font-size: 0.7rem;
+  background: #6c5ce7;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+}
