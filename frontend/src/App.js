@@ -1,41 +1,65 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './App.css';
 
 function App() {
   const [signals, setSignals] = useState([]);
-  const [ws, setWs] = useState(null);
+  const [filter, setFilter] = useState('all');
+  const [darkMode, setDarkMode] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const audioRef = useRef(null);
 
   useEffect(() => {
-    const socket = new WebSocket('wss://reversaledge-backend.onrender.com/ws');
+    audioRef.current = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3');
    
-    socket.onopen = () => {
-      console.log('Connected to ReversalEdge Engine');
+    const ws = new WebSocket('wss://reversaledge-backend.onrender.com/ws');
+   
+    ws.onmessage = (e) => {
+      const data = JSON.parse(e.data);
+      if (soundEnabled) audioRef.current.play().catch(() => {});
+      if (!paused) {
+        setSignals(prev => [data, ...prev].slice(0, 100));
+      }
     };
 
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      setSignals(prev => [data, ...prev].slice(0, 50)); // Keep last 50
-    };
+    return () => ws.close();
+  }, [paused, soundEnabled]);
 
-    socket.onclose = () => {
-      console.log('Disconnected');
-    };
-
-    setWs(socket);
-
-    return () => socket.close();
-  }, []);
+  const filtered = signals.filter(s =>
+    filter === 'all' ||
+    (filter === 'high' && s.confidence >= 85) ||
+    (filter === 'buy' && s.type === 'buy') ||
+    (filter === 'sell' && s.type === 'sell')
+  );
 
   return (
-    <div className="App">
+    <div className={`App ${darkMode ? 'dark' : ''}`}>
       <header>
-        <h1>ReversalEdge</h1>
-        <p>Live Crypto Reversal Scanner</p>
+        <h1>ReversalEdge <span className="version">v2</span></h1>
+        <p>AI-Powered Crypto Reversal Scanner • Binance Live Data</p>
       </header>
 
+      <div className="controls">
+        <select value={filter} onChange={e => setFilter(e.target.value)}>
+          <option value="all">All Signals</option>
+          <option value="high">High Confidence (≥85%)</option>
+          <option value="buy">BUY Only</option>
+          <option value="sell">SELL Only</option>
+        </select>
+        <button onClick={() => setPaused(!paused)} className="icon">
+          {paused ? 'Play' : 'Pause'}
+        </button>
+        <button onClick={() => setSoundEnabled(!soundEnabled)} className="icon">
+          {soundEnabled ? 'Sound On' : 'Sound Off'}
+        </button>
+        <button onClick={() => setDarkMode(!darkMode)} className="icon">
+          {darkMode ? 'Light Mode' : 'Dark Mode'}
+        </button>
+      </div>
+
       <div className="signals">
-        {signals.length === 0 ? (
-          <p className="no-data">Waiting for signals...</p>
+        {filtered.length === 0 ? (
+          <p className="no-data">No signals match filter...</p>
         ) : (
           <table>
             <thead>
@@ -44,17 +68,19 @@ function App() {
                 <th>Pair</th>
                 <th>Signal</th>
                 <th>Confidence</th>
+                <th>Price</th>
+                <th>Vol ×</th>
               </tr>
             </thead>
             <tbody>
-              {signals.map((s, i) => (
+              {filtered.map((s, i) => (
                 <tr key={i} className={s.type}>
                   <td>{new Date(s.time).toLocaleTimeString()}</td>
                   <td><strong>{s.pair}</strong></td>
-                  <td className="signal">
-                    {s.type === 'buy' ? 'BUY' : 'SELL'}
-                  </td>
+                  <td className="signal">{s.type.toUpperCase()}</td>
                   <td>{s.confidence}%</td>
+                  <td>${s.price}</td>
+                  <td>{s.volume_spike}x</td>
                 </tr>
               ))}
             </tbody>
@@ -63,7 +89,11 @@ function App() {
       </div>
 
       <footer>
-        <p>Powered by <strong>ReversalEdge Engine</strong> | {signals.length} signals</p>
+        <p>
+          <strong>{signals.length}</strong> signals •
+          <strong> {filtered.length}</strong> shown •
+          Powered by <strong>Binance API</strong>
+        </p>
       </footer>
     </div>
   );
