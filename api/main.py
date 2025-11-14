@@ -26,43 +26,47 @@ async def fetch_klines(symbol):
 
 async def detect_reversal(symbol):
     try:
-        prices = await fetch_klines(symbol)
-        volumes = await fetch_klines(symbol + "@trade")  # Not real, but simulate
-        # Simulate volume from price volatility
-        volume = np.random.normal(100, 30) + abs(prices[-1] - prices[-2]) * 1000
+        # Fetch real 1m klines
+        url = f"https://api.binance.com/api/v3/klines?symbol={symbol.upper()}&interval=1m&limit=11"
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as resp:
+                data = await resp.json()
+                if len(data) < 11:
+                    return None
+                prices = [float(k[4]) for k in data]  # close prices
+                volumes = [float(k[5]) for k in data]  # volumes
 
         if symbol not in price_history:
             price_history[symbol] = []
-        price_history[symbol].append((prices[-1], volume))
+        price_history[symbol].append((prices[-1], volumes[-1]))
         price_history[symbol] = price_history[symbol][-VOLUME_WINDOW:]
 
         if len(price_history[symbol]) < VOLUME_WINDOW:
             return None
 
         recent = price_history[symbol]
-        prices = [p[0] for p in recent]
-        volumes = [p[1] for p in recent]
+        hist_prices = [p[0] for p in recent[:-1]]
+        hist_vols = [p[1] for p in recent[:-1]]
+        curr_price = recent[-1][0]
+        curr_vol = recent[-1][1]
 
-        avg_volume = np.mean(volumes[:-1])
-        current_volume = volumes[-1]
-        price_change = ((prices[-1] - prices[-2]) / prices[-2]) * 100
+        avg_vol = sum(hist_vols) / len(hist_vols)
+        price_change = ((curr_price - hist_prices[-1]) / hist_prices[-1]) * 100
 
-        # Reversal logic
-        is_bullish = price_change > PRICE_CHANGE_THRESHOLD and current_volume > avg_volume * VOLUME_SPIKE_THRESHOLD
-        is_bearish = price_change < -PRICE_CHANGE_THRESHOLD and current_volume > avg_volume * VOLUME_SPIKE_THRESHOLD
+        if curr_vol > avg_vol * VOLUME_SPIKE_THRESHOLD and abs(price_change) > PRICE_CHANGE_THRESHOLD:
+            confidence = min(98, int(70 + abs(price_change) * 8 + (curr_vol / avg_vol - 1) * 15))
+            signal_type = "buy" if price_change > 0 else "sell"
 
-        if is_bullish or is_bearish:
-            confidence = min(98, int(70 + abs(price_change) * 10 + (current_volume / avg_volume - 1) * 20))
             return {
                 "pair": symbol.upper().replace("USDT", "/USDT"),
-                "type": "buy" if is_bullish else "sell",
+                "type": signal_type,
                 "confidence": confidence,
                 "time": datetime.now().isoformat(),
-                "price": round(prices[-1], 4),
-                "volume_spike": round(current_volume / avg_volume, 2)
+                "price": round(curr_price, 4),
+                "volume_spike": round(curr_vol / avg_vol, 2)
             }
-    except:
-        pass
+    except Exception as e:
+        print(f"Error: {e}")
     return None
 
 async def signal_generator(websocket: WebSocket):
