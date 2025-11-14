@@ -23,4 +23,4 @@ async def websocket_endpoint(websocket: WebSocket):
             data = await websocket.receive_text()
             await websocket.send_text(f"Echo: {data}")
         except:
-            break 
+            break
